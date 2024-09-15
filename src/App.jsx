@@ -3,19 +3,29 @@ import "./App.css";
 
 function App() {
   // State variables for input fields
-  const [initialCorpus, setInitialCorpus] = useState("");
-  const [monthlyWithdrawal, setMonthlyWithdrawal] = useState("");
-  const [annualReturn, setAnnualReturn] = useState("");
-  const [withdrawalIncrease, setWithdrawalIncrease] = useState("");
-  const [years, setYears] = useState(""); // Now dynamic
+  const [initialCorpus, setInitialCorpus] = useState("0");
+  const [monthlyWithdrawal, setMonthlyWithdrawal] = useState("0");
+  const [annualReturn, setAnnualReturn] = useState("0");
+  const [withdrawalIncrease, setWithdrawalIncrease] = useState("0");
+  const [years, setYears] = useState("0");
   const [finalCorpus, setFinalCorpus] = useState(null);
   const [monthlyDetails, setMonthlyDetails] = useState([]);
 
+  // Function to format numbers with commas
+  const formatNumber = (num) => {
+    return Number(num).toLocaleString("en-IN");
+  };
+
+  // Function to remove commas and return numeric value
+  const removeCommas = (num) => {
+    return num.replace(/,/g, "");
+  };
+
   // Function to calculate the corpus after the specified number of years
   const calculateFinalCorpus = () => {
-    let corpus = parseFloat(initialCorpus);
+    let corpus = parseFloat(removeCommas(initialCorpus));
     const monthlyReturn = parseFloat(annualReturn) / 12 / 100;
-    let withdrawal = parseFloat(monthlyWithdrawal);
+    let withdrawal = parseFloat(removeCommas(monthlyWithdrawal));
     const withdrawalIncreaseRate = parseFloat(withdrawalIncrease) / 100;
     const totalMonths = parseInt(years) * 12;
 
@@ -31,42 +41,42 @@ function App() {
 
       // Store details for each month
       details.push({
-        month: (month%12) ,
+        month: month % 12 === 0 ? 12 : month % 12, // Display month 12 for year-end
         interestEarned: interestEarned.toFixed(2),
         withdrawal: withdrawal.toFixed(2),
         remainingCorpus: corpus.toFixed(2),
-        year: Math.floor(month/12) + 1,
+        year: Math.floor((month - 1) / 12) + 1,
       });
 
       // Every 12 months, increase the withdrawal by the annual increase percentage
       if (month % 12 === 0) {
-        withdrawal *= (1 + withdrawalIncreaseRate);
+        withdrawal *= 1 + withdrawalIncreaseRate;
       }
     }
 
-    setFinalCorpus(corpus.toFixed(2)); // Set final corpus to 2 decimal places
-    setMonthlyDetails(details); // Update the table data
+    setFinalCorpus(corpus.toFixed(2));
+    setMonthlyDetails(details);
   };
 
   return (
     <div className="App">
       <h1>Retirement Corpus Calculator</h1>
-      
+
       <div className="input-container">
         <label>Initial Corpus (₹):</label>
         <input
-          type="number"
-          value={initialCorpus}
-          onChange={(e) => setInitialCorpus(e.target.value)}
+          type="text"
+          value={formatNumber(initialCorpus)}
+          onChange={(e) => setInitialCorpus(removeCommas(e.target.value))}
         />
       </div>
 
       <div className="input-container">
         <label>Monthly Withdrawal (₹):</label>
         <input
-          type="number"
-          value={monthlyWithdrawal}
-          onChange={(e) => setMonthlyWithdrawal(e.target.value)}
+          type="text"
+          value={formatNumber(monthlyWithdrawal)}
+          onChange={(e) => setMonthlyWithdrawal(removeCommas(e.target.value))}
         />
       </div>
 
@@ -101,7 +111,7 @@ function App() {
 
       {finalCorpus && (
         <div className="result">
-          <h2>Final Corpus after {years} years: ₹{finalCorpus}</h2>
+          <h2>Final Corpus after {years} years: ₹{formatNumber(finalCorpus)}</h2>
         </div>
       )}
 
@@ -118,13 +128,13 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {monthlyDetails.map((detail) => (
-              <tr key={detail.month}>
+            {monthlyDetails.map((detail, index) => (
+              <tr key={index}>
                 <td>{detail.month}</td>
                 <td>{detail.year}</td>
-                <td>{detail.interestEarned}</td>
-                <td>{detail.withdrawal}</td>
-                <td>{detail.remainingCorpus}</td>
+                <td>{formatNumber(detail.interestEarned)}</td>
+                <td>{formatNumber(detail.withdrawal)}</td>
+                <td>{formatNumber(detail.remainingCorpus)}</td>
               </tr>
             ))}
           </tbody>
